@@ -82,6 +82,27 @@ void GeneradorDeAlq(struct Alq_venta Datos[])
     limpiarBuffer();
 }
 
+void errorMenu()
+{
+    printf("Ingrese una opcion valida");
+}
+
+int Menu()
+{
+    int opcion;
+    printf("----------Menu----------\n"); // Cada funcion del menu invoca una funcion especifica o submenu
+    printf("1 - ");
+    printf("2 - ");
+    printf("3 - ");
+    printf("4 - ");
+    printf("5 - ");
+    printf("6 - ");
+    printf("7 - ");
+    printf("8 - ");
+    scanf("%i", &opcion);
+    return opcion;
+}
+
 void Impresion(struct Alq_venta Datos[])
 {
     printf("----------Salida de datos----------\n");
@@ -111,6 +132,7 @@ void Impresion(struct Alq_venta Datos[])
 }
 int main()
 {
+    int opcion;
     struct Alq_venta Alquiler_Ventas[1];
     // Tiempo Actual
     time_t t = time(NULL);
@@ -131,6 +153,46 @@ int main()
         printf("Error formateando fecha");
     }
 
+    opcion = menu();
+    if (opcion > 0)
+    {
+        switch (opcion)
+        {
+        case '1':
+            // Opcion 1 del menu
+            break;
+        case '2':
+            // Opcion 2 del menu
+            break;
+        case '3':
+            // Opcion 3 del menu
+            break;
+        case '4':
+            // Opcion 4 del menu
+            break;
+        case '5':
+            // Opcion 5 del menu
+            break;
+        case '6':
+            // Opcion 6 del menu
+            break;
+        case '7':
+            // Opcion 7 del menu
+            break;
+        case '8':
+            // Opcion 8 del menu
+            break;
+
+        default:
+            errorMenu();
+            break;
+        }
+    }
+    else
+    {
+        errorMenu()
+    }
+
     GeneradorDeAlq(&Alquiler_Ventas[0]);
     Impresion(&Alquiler_Ventas[0]);
-    }
+}
