@@ -30,6 +30,7 @@ struct Alq_venta
     char FechaSalida[70];
     int Activos;
 };
+
 void GeneradorDeAlq(struct Alq_venta Datos[])
 {
     printf("----------Entrada de datos----------\n");
@@ -90,8 +91,8 @@ void errorMenu()
 int Menu()
 {
     int opcion;
-    printf("----------Menu----------\n"); // Cada funcion del menu invoca una funcion especifica o submenu
-    printf("1 - ");
+    printf("----------Menu----------\n");       // Cada funcion del menu invoca una funcion especifica o submenu
+    printf("1 - Crear archivo de propiedades"); // Crea el archivo de propiedades.bin
     printf("2 - ");
     printf("3 - ");
     printf("4 - ");
@@ -130,9 +131,12 @@ void Impresion(struct Alq_venta Datos[])
 
     printf("Activos : %d\n", Datos->Activos);
 }
+
 int main()
 {
     int opcion;
+    FILE *pPropiedades;
+
     struct Alq_venta Alquiler_Ventas[1];
     // Tiempo Actual
     time_t t = time(NULL);
@@ -159,10 +163,21 @@ int main()
         switch (opcion)
         {
         case '1':
-            // Opcion 1 del menu
+            // Opcion 1 del menu (Crear)
+            // Genera el archivo binario propiedades.dat
+            pPropiedades = fopen("propiedades.dat", "wb+");
+            if (pPropiedades != NULL)
+            {
+                printf("Archivo creado con exito");
+            }
+            else
+            {
+                printf("Error en la creacion del archivo");
+            };
             break;
         case '2':
-            // Opcion 2 del menu
+            // Opcion 2 del menu (Listar Propiedades)
+            // Lista los valores escritos en propiedades.dat
             break;
         case '3':
             // Opcion 3 del menu
