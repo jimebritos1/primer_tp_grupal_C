@@ -85,23 +85,20 @@ void GeneradorDeAlq(struct Alq_venta Datos[])
 
 void errorMenu()
 {
-    printf("Ingrese una opcion valida");
+    printf("Ingrese una opcion valida\n");
 }
 
-int Menu()
+void menu()
 {
-    int opcion;
-    printf("----------Menu----------\n");       // Cada funcion del menu invoca una funcion especifica o submenu
-    printf("1 - Crear archivo de propiedades"); // Crea el archivo de propiedades.bin
-    printf("2 - ");
-    printf("3 - ");
-    printf("4 - ");
-    printf("5 - ");
-    printf("6 - ");
-    printf("7 - ");
-    printf("8 - ");
-    scanf("%i", &opcion);
-    return opcion;
+    printf("---------------Menu--------------\n");       // Cada funcion del menu invoca una funcion especifica o submenu
+    printf("1 - Crear archivo de propiedades\n"); // Crea el archivo de propiedades.bin
+    printf("2 - \n");
+    printf("3 - \n");
+    printf("4 - \n");
+    printf("5 - \n");
+    printf("6 - \n");
+    printf("7 - \n");
+    printf("8 - \n");
 }
 
 void Impresion(struct Alq_venta Datos[])
@@ -134,7 +131,7 @@ void Impresion(struct Alq_venta Datos[])
 
 int main()
 {
-    int opcion;
+    char opcion;
     FILE *pPropiedades;
 
     struct Alq_venta Alquiler_Ventas[1];
@@ -157,7 +154,8 @@ int main()
         printf("Error formateando fecha");
     }
 
-    opcion = menu();
+    menu();
+    scanf("%c", &opcion);
     if (opcion > 0)
     {
         switch (opcion)
@@ -205,9 +203,9 @@ int main()
     }
     else
     {
-        errorMenu()
+        errorMenu();
     }
 
-    GeneradorDeAlq(&Alquiler_Ventas[0]);
-    Impresion(&Alquiler_Ventas[0]);
+    //GeneradorDeAlq(&Alquiler_Ventas[0]);
+    //Impresion(&Alquiler_Ventas[0]);
 }
