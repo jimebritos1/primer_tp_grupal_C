@@ -209,3 +209,220 @@ int main()
     //GeneradorDeAlq(&Alquiler_Ventas[0]);
     //Impresion(&Alquiler_Ventas[0]);
 }
+
+/*---------------------- Punto Numero 6 --------------------------- */
+/*------------------------------------------------------------------*/
+// Alta de propiedad:
+
+void darAlta()
+{
+    FILE *arch;
+    arch=fopen("propiedades.dat","ab");
+    if (arch==NULL)
+        exit(1);
+    Alq_venta Datos;
+    printf("Ingrese el numero de ID : ");
+    cargaYConsulta();
+    printf("Zona en donde se encuentra la residencia : ");
+    scanf("%s ", Datos->Zona);
+    printf("Ciudad o Barrio de la residencia : ");
+    scanf("%s ",Datos->Ciudad_Barrio);
+    do {
+    printf("Cantidad de Dormitorios : ");
+    scanf("%d",Datos->Dormitorios);
+    }
+    while (Dormitorios<0)
+
+    do {
+    printf("Cantidad de Baños : ");
+    scanf("%d", Datos->Baños);
+    }
+    while (Baños<0)
+
+    do {
+    printf("Superficie Total de la vivienda : ");
+    scanf("%.2f", Datos->SuperficieTotal);
+    }
+    while (SuperficieTotal<0)
+    do {
+    printf("Superficie Cubierta de la vivienda : ");
+    scanf("%.2f", Datos->SuperficieCubierta);
+    }
+    while (SuperficieCubierta<0)
+    do {
+    printf("Precio : ");
+    scanf("%.2f", Datos->Precio);
+    }
+    while (Precio<0)
+    printf("Tipo de Moneda : ");
+    scanf("%.2f", Datos->TipMoneda);
+
+    printf("Que Operaciones va a realizar con la vivienda: ");
+    scanf("%s", Datos->Operacion);
+    printf("Fecha de Salida: ");
+    scanf("%s", Datos->FechaSalida);
+    printf("Activos : ");
+    scanf("%d", Datos->Activos);
+    fwrite(&Datos, sizeof(Alq_venta), 1, arch);
+    fclose(arch);
+    continuar();
+}
+
+/*------------------------------------------------------------------*/
+//// Carga la propiedad y su tipo...
+
+void cargarPropiedad(){
+
+ int opcion;
+
+ printf("Selecciones una opcion:\n 1-Departamento\n 2-Casa \n 3-PH\n");
+  printf("Tipo de Propiedad : ");
+    scanf("%s", Datos->TipPropiedad);
+ switch(opcion){
+ case 1:
+    break;
+ case 2:
+    break;
+ case 3:
+    break;
+ default:
+    break;
+
+ }
+
+}
+/*------------------------------------------------------------------*/
+
+/*
+Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
+Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
+Este algoritmo solo funcionará si cada palabra está separado por un espacio:
+*/
+
+void cambiar_a_mayusculas(char* palabras)
+{
+    for(int primeraLetra = 1; *palabras; ++palabras)
+    {
+        if(primeraLetra && isalpha(*palabras))
+        {
+            *palabras = toupper(*palabras);
+            primeraLetra = 0;
+        }
+        if(*palabras == ' ')
+            primeraLetra = 1;
+    }
+}
+
+/*------------------------------------------------------------------*/
+/*
+Esta función permite determinar si una cadena corresponde a:
+1- Un número entero,
+2- Un número con punto decimal,
+3- Un valor numérico inválido (caracteres, espacios, etc.).
+*/
+
+/*
+
+#include <ctype.h>
+
+#define VALUE_SIZE 256
+#define FLOAT_POINT '.'
+*/
+int validarNumero(char[]);
+
+int validarNumero(char number[]) {
+    int i = 0, x = 0;
+
+    for (i = 0; i < VALUE_SIZE; i++) {
+
+        if (number[i] == FLOAT_POINT)
+            x++;
+
+        if (!isdigit(number[i]) && number[i] != FLOAT_POINT && number[i] != '\0')
+            return 3;   /* Numero Invalido */
+    }
+
+    if (x == 0)
+        return 1;   /* Numero Entero */
+
+    if (x == 1)
+        return 2;   /* Numero Flotante */
+
+    if (x > 1)
+        return 3;   /* Numero no valido */
+}
+
+*/
+
+//Verifica que lo ingresado por el usuario sea un Numero...
+void esUnNumero(validarNumero()){
+
+     if (validarNumero() != 3 ){
+
+
+     }
+}
+
+//Verifica que lo ingresado por el ususario sea un Caracter...
+
+void esUnCaracter(validarNumero()){
+
+    if(validarNumero() == 3){
+
+
+    }
+}
+/*------------------------------------------------------------------*/
+
+//Control de ERROR NUMERO:
+
+void controlErrorNumero(char num[]){
+{
+    for (int i = 0; i < strlen(num); i++)
+    {
+        if(!isdigit(num[i]) ) {
+            printf("Ingrese un numero valido");
+            break;
+        }
+    }
+}
+
+
+}
+
+/*------------------------------------------------------------------*/
+
+// Ingresa el numero de Id y valida que este no sea negativo...
+//Consulta si el numero del Id ingresado ya se encuentra registrado
+
+void cargaYConsulta()
+{
+    int id;
+    FILE *arch;
+    arch=fopen("propiedades.dat","rb");
+    if (arch==NULL)
+        exit(1);
+
+    do {
+    printf("Ingrese Id:");
+    scanf("%i", &id);
+    }
+    while (id<0)
+    Alq_venta Datos;
+    int existe=0;
+    fread(&Datos, sizeof(Alq_venta), 1, arch);
+    while(!feof(arch))
+    {
+        if (Id==Datos.Id)
+        {
+           printf("El id ingresado ya existe en el archivo");
+           existe=1;
+           break;
+        }
+
+    }
+    if (existe==0)
+        fwrite(&id, sizeof(Alq_venta), 1, arch);
+    fclose(arch);
+    continuar();
+}
