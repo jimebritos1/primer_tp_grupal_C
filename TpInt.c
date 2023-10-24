@@ -21,8 +21,8 @@ struct Alq_venta
 {
     int Id;
     char FechaIngreso[70];
-    char Zona[30];
-    char Ciudad_Barrio[30];
+    char Zona[20];
+    char Ciudad_Barrio[20];
     int Dormitorios;
     int Banos;
     float SuperficieTotal;
@@ -34,7 +34,7 @@ struct Alq_venta
     char FechaSalida[70];
     int Activos;
 };
-
+/*En caso de que la tabla falle utilizo esto para visualizar los datos
 void Impresion(struct Alq_venta *Datos)
 {
     printf("\n");
@@ -47,7 +47,7 @@ void Impresion(struct Alq_venta *Datos)
     printf("Ciudad o Barrio de la residencia : %s \n", Datos->Ciudad_Barrio);
 
     printf("Dormitorios : %d\n", Datos->Dormitorios);
-    printf("Cantidad de Banos : %d\n", Datos->Banos);
+    printf("Banos : %d\n", Datos->Banos);
 
     printf("Superficie Total de la vivienda : %.2f\n", Datos->SuperficieTotal);
 
@@ -85,6 +85,38 @@ void mostrarContenidoArchivo()
     fclose(Archivo);
     fflush(stdin);
 }
+*/
+void mostrarContenidoformatotabla()
+{
+
+    struct Alq_venta Propiedades;
+    FILE *pArchivo;
+    pArchivo = fopen("propiedades.dat", "rb");
+    printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
+           "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
+    printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    if (pArchivo != NULL)
+    {
+        fread(&Propiedades, sizeof(struct Alq_venta), 1, pArchivo);
+
+        while (!feof(pArchivo))
+        {
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2d|%-19s|%-19s|%-20s| %-10d| %-4d|%-10.2f|%-13.2f|%-10.2f|%-6s|%-15s|%-10s|%-15s|%-7d\n",
+                   Propiedades.Id, Propiedades.FechaIngreso, Propiedades.Zona, Propiedades.Ciudad_Barrio, Propiedades.Dormitorios, Propiedades.Banos, Propiedades.SuperficieTotal, Propiedades.SuperficieCubierta, Propiedades.Precio, Propiedades.TipMoneda, Propiedades.TipPropiedad, Propiedades.Operacion, Propiedades.FechaSalida, Propiedades.Activos);
+            fread(&Propiedades, sizeof(struct Alq_venta), 1, pArchivo);
+        }
+        printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
+        fclose(pArchivo);
+    }
+    else
+    {
+        printf("Error en la apertura del archivo");
+    }
+    getchar();
+};
 //------------------------------------------------------------------//
 //// Carga la propiedad y su tipo...
 void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
@@ -120,7 +152,7 @@ void GeneradorDeAlq(struct Alq_venta *Datos)
     time_t t = time(NULL);
     struct tm tiempoLocal = *localtime(&t);
     // El formato.
-    char *formato = "%Y-%m-%d %H:%M:%S";
+    char *formato = "%d-%m-%Y %H:%M:%S";
     // Intentar formatear
     int bytesEscritos =
         strftime(Datos->FechaIngreso, sizeof Datos->FechaIngreso, formato, &tiempoLocal);
@@ -191,11 +223,53 @@ void errorMenu()
 {
     printf("xxxxxxxxxxxxxx Ingrese una opcion valida xxxxxxxxxxxxxx\n");
 }
+
+void submenu()
+{
+    printf("------------Sub-Menu------------\n"); 
+    printf("1 - Listar Todos\n");                 
+    printf("2 - Solo Campos Activos\n");
+    printf("3 - el ingreso por teclado de un tipo de propiedad\n");
+    printf("4 - el ingreso de un rango de tiempo de ingreso(minimo y maximo)\n");
+    
+    char Opcion;
+
+    printf("\n");
+    printf("Elija opcion : ");
+    scanf("%c", &Opcion);
+    limpiarBuffer();
+    printf("\n");
+
+if (Opcion > 0)
+    {
+        switch (Opcion)
+        {
+        case '1':
+            // Opcion 1 del menu
+            //mostrarContenidoArchivo();
+            mostrarContenidoformatotabla();
+            break;
+        case '2':
+            // Opcion 2 del menu
+            break;
+        case '3':
+            // Opcion 3 del menu
+            break;
+        case '4':
+            // Opcion 4 del menu
+            break;
+        }
+    }
+    else
+    {
+        errorMenu();
+    }
+}
 void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
 {
     printf("--------------Menu--------------\n"); // Cada funcion del menu invoca una funcion especifica o submenu
     printf("1 - Crear archivo de propiedades\n"); // Crea el archivo de propiedades.bin
-    printf("2 - Mirar Todo el Contenido\n");
+    printf("2 - Mirar el Contenido del Archivo\n");
     printf("3 - \n");
     printf("4 - \n");
     printf("5 - \n");
@@ -209,6 +283,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
     printf("\n");
     printf("Elija opcion : ");
     scanf("%c", &opcion);
+    limpiarBuffer();
     printf("\n");
 
     if (opcion > 0)
@@ -240,7 +315,8 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
         case '2':
             // Opcion 2 del menu (Listar Propiedades)
             // Lista los valores escritos en propiedades.dat
-            mostrarContenidoArchivo();
+            submenu();
+
             break;
         case '3':
             // Opcion 3 del menu
@@ -273,6 +349,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
         errorMenu();
     }
 }
+
 
 int main()
 {
