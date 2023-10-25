@@ -89,7 +89,7 @@ void mostrarContenidoArchivo()
     fflush(stdin);
 }
 */
-//Funcion para reiniciar el Archivo/Borrar Todo
+// Funcion para reiniciar el Archivo/Borrar Todo
 void BorrarTodo()
 {
     FILE *pArchivo;
@@ -119,12 +119,13 @@ void mostrarContenidoformatotabla()
     struct Alq_venta Propiedades;
     FILE *pArchivo;
     pArchivo = fopen("propiedades.dat", "rb");
-    printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
-           "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
-    printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+
     if (pArchivo != NULL)
     {
+        printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
+               "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
+        printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         fread(&Propiedades, sizeof(struct Alq_venta), 1, pArchivo);
 
         while (!feof(pArchivo))
@@ -172,7 +173,7 @@ void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
 }
 
 // Función para generar datos de alquiler o venta de propiedades.
-void GeneradorDeAlq(struct Alq_venta *Datos)
+void GeneradorDeProp(struct Alq_venta *Datos)
 {
     time_t t = time(NULL);
     struct tm tiempoLocal = *localtime(&t);
@@ -254,7 +255,6 @@ void buscarPorId(struct Alq_venta *Propiedades)
     int id;
     printf("Ingrese el ID de la propiedad que desea buscar: ");
     scanf("%d", &id);
-
     int encontrado = 0;
 
     FILE *pArchivo = fopen("propiedades.dat", "rb");
@@ -268,31 +268,31 @@ void buscarPorId(struct Alq_venta *Propiedades)
 
     while (fread(&propiedad, sizeof(struct Alq_venta), 1, pArchivo) != 0)
     {
+
         if (propiedad.Id == id)
         {
-            printf("Propiedad encontrada:\n");
-            printf("ID: %d\n", propiedad.Id);
-            printf("Fecha de Entrada: %s\n", propiedad.FechaIngreso);
-            printf("Zona: %s\n", propiedad.Zona);
-            printf("Ciudad/Barrio: %s\n", propiedad.Ciudad_Barrio);
-            printf("Dormitorios: %d\n", propiedad.Dormitorios);
-            printf("Banos: %d\n", propiedad.Banos);
-            printf("Superficie Total: %.2f\n", propiedad.SuperficieTotal);
-            printf("Superficie Cubierta: %.2f\n", propiedad.SuperficieCubierta);
-            printf("Precio: %.2f %s\n", propiedad.Precio, propiedad.TipMoneda);
-            printf("Tipo Propiedad: %s\n", propiedad.TipPropiedad);
-            printf("Operacion: %s\n", propiedad.Operacion);
-            printf("Fecha de Salida: %s\n", propiedad.FechaSalida);
-            printf("Activos: %d\n", propiedad.Activos);
+
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
+                   "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2d|%-19s|%-19s|%-20s| %-10d| %-4d|%-10.2f|%-13.2f|%-10.2f|%-6s|%-15s|%-10s|%-15s|%-7d\n",
+                   propiedad.Id, propiedad.FechaIngreso, propiedad.Zona, propiedad.Ciudad_Barrio, propiedad.Dormitorios, propiedad.Banos, propiedad.SuperficieTotal, propiedad.SuperficieCubierta, propiedad.Precio, propiedad.TipMoneda, propiedad.TipPropiedad, propiedad.Operacion, propiedad.FechaSalida, propiedad.Activos);
+        
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
             encontrado = 1;
         }
     }
 
     fclose(pArchivo);
+    limpiarBuffer();
 
     if (!encontrado)
     {
+        printf("\n");
         printf("No se encontro ninguna propiedad con el ID proporcionado.\n");
+        printf("\n");
     }
 }
 
@@ -325,26 +325,21 @@ void buscarPorTipoOperacionYPropiedad(struct Alq_venta *Propiedades)
         if (strncmp(tipoOperacion, propiedad.Operacion, sizeof(tipoOperacion)) == 0 &&
             strncmp(tipoPropiedad, propiedad.TipPropiedad, sizeof(tipoPropiedad)) == 0)
         {
-            printf("Propiedad encontrada:\n");
-            printf("ID: %d\n", propiedad.Id);
-            printf("Fecha de Entrada: %s\n", propiedad.FechaIngreso);
-            printf("Zona: %s\n", propiedad.Zona);
-            printf("Ciudad/Barrio: %s\n", propiedad.Ciudad_Barrio);
-            printf("Dormitorios: %d\n", propiedad.Dormitorios);
-            printf("Banos: %d\n", propiedad.Banos);
-            printf("Superficie Total: %.2f\n", propiedad.SuperficieTotal);
-            printf("Superficie Cubierta: %.2f\n", propiedad.SuperficieCubierta);
-            printf("Precio: %.2f %s\n", propiedad.Precio, propiedad.TipMoneda);
-            printf("Tipo Propiedad: %s\n", propiedad.TipPropiedad);
-            printf("Operacion: %s\n", propiedad.Operacion);
-            printf("Fecha de Salida: %s\n", propiedad.FechaSalida);
-            printf("Activos: %d\n", propiedad.Activos);
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
+                   "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2d|%-19s|%-19s|%-20s| %-10d| %-4d|%-10.2f|%-13.2f|%-10.2f|%-6s|%-15s|%-10s|%-15s|%-7d\n",
+                   propiedad.Id, propiedad.FechaIngreso, propiedad.Zona, propiedad.Ciudad_Barrio, propiedad.Dormitorios, propiedad.Banos, propiedad.SuperficieTotal, propiedad.SuperficieCubierta, propiedad.Precio, propiedad.TipMoneda, propiedad.TipPropiedad, propiedad.Operacion, propiedad.FechaSalida, propiedad.Activos);
+
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
             encontrado = 1;
         }
     }
 
     fclose(pArchivo);
-
+    limpiarBuffer();
     if (!encontrado)
     {
         printf("No se encontro ninguna propiedad con los tipos de operacion y propiedad proporcionados.\n");
@@ -371,27 +366,27 @@ void submenu(struct Alq_venta *Propiedades)
 
     switch (Opcion)
     {
-        case '1':
-            mostrarContenidoformatotabla();
-            break;
-        case '2':
-            // Opcion 2 del menú (aquí puedes agregar su funcionalidad)
-            break;
-        case '3':
-            // Opcion 3 del menú (aquí puedes agregar su funcionalidad)
-            break;
-        case '4':
-            // Opcion 4 del menú (aquí puedes agregar su funcionalidad)
-            break;
-        case '5':
-            buscarPorId(Propiedades);
-            break;
-        case '6':
-            buscarPorTipoOperacionYPropiedad(Propiedades);
-            break;
-        default:
-            errorMenu();
-            break;
+    case '1':
+        mostrarContenidoformatotabla();
+        break;
+    case '2':
+        // Opcion 2 del menú (aquí puedes agregar su funcionalidad)
+        break;
+    case '3':
+        // Opcion 3 del menú (aquí puedes agregar su funcionalidad)
+        break;
+    case '4':
+        // Opcion 4 del menú (aquí puedes agregar su funcionalidad)
+        break;
+    case '5':
+        buscarPorId(Propiedades);
+        break;
+    case '6':
+        buscarPorTipoOperacionYPropiedad(Propiedades);
+        break;
+    default:
+        errorMenu();
+        break;
     }
 }
 
@@ -425,7 +420,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             Arch_Datos = fopen("propiedades.dat", "rb+");
             *PSalida = 0;
 
-            GeneradorDeAlq(Alquiler_Ventas);
+            GeneradorDeProp(Alquiler_Ventas);
             fseek(Arch_Datos, Alquiler_Ventas->Id * sizeof(struct Alq_venta), SEEK_SET);
             fwrite(Alquiler_Ventas, sizeof(struct Alq_venta), 1, Arch_Datos);
 
@@ -439,19 +434,19 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             submenu(Alquiler_Ventas);
             break;
         case '3':
-            //Opcion 3 del menu
+            // Opcion 3 del menu
             break;
         case '4':
-            //Opcion 4 del menu
+            // Opcion 4 del menu
             break;
         case '5':
-            //Opcion 5 del menu
+            // Opcion 5 del menu
             break;
         case '6':
-            //Opcion 6 del menu
+            // Opcion 6 del menu
             break;
         case '7':
-            //Opcion 7 del menu
+            // Opcion 7 del menu
             BorrarTodo();
             break;
         case '8':
