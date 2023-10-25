@@ -89,6 +89,29 @@ void mostrarContenidoArchivo()
     fflush(stdin);
 }
 */
+//Funcion para reiniciar el Archivo/Borrar Todo
+void BorrarTodo()
+{
+    FILE *pArchivo;
+    pArchivo = fopen("propiedades.dat", "wb");
+    struct Alq_venta Propiedades;
+
+    memset(&Propiedades, 0, sizeof(struct Alq_venta));
+    for (int i = 0; i < 16; i++)
+    {
+        Propiedades.Id = i;
+        fwrite(&Propiedades, sizeof(struct Alq_venta), 1, pArchivo);
+    }
+
+    if (pArchivo != NULL)
+    {
+        fclose(pArchivo);
+    }
+    else
+    {
+        printf("Error en la apertura del archivo");
+    }
+};
 
 // Función para mostrar el contenido de propiedades en un formato de tabla.
 void mostrarContenidoformatotabla()
@@ -382,7 +405,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
     printf("4 - \n");
     printf("5 - \n");
     printf("6 - \n");
-    printf("7 - \n");
+    printf("7 - Reiniciar Tabla\n");
     printf("8 - Salida\n");
 
     char opcion;
@@ -399,10 +422,11 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
         switch (opcion)
         {
         case '1':
-            Arch_Datos = fopen("propiedades.dat", "wb");
+            Arch_Datos = fopen("propiedades.dat", "rb+");
             *PSalida = 0;
 
             GeneradorDeAlq(Alquiler_Ventas);
+            fseek(Arch_Datos, Alquiler_Ventas->Id * sizeof(struct Alq_venta), SEEK_SET);
             fwrite(Alquiler_Ventas, sizeof(struct Alq_venta), 1, Arch_Datos);
 
             if (Arch_Datos != NULL)
@@ -428,6 +452,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             break;
         case '7':
             //Opcion 7 del menu
+            BorrarTodo();
             break;
         case '8':
             // Opcion de salida
