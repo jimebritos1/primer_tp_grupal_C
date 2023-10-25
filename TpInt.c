@@ -2,7 +2,6 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <ctype.h>
 
 #define VALUE_SIZE 256
@@ -11,12 +10,15 @@
 #define Columnas 15
 #define Filas 9
 
+// Función para limpiar el búfer de entrada.
 void limpiarBuffer()
 {
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
         ;
 }
+
+// Definición de la estructura Alq_venta que almacena datos de propiedades.
 struct Alq_venta
 {
     int Id;
@@ -34,6 +36,7 @@ struct Alq_venta
     char FechaSalida[70];
     int Activos;
 };
+
 /*En caso de que la tabla falle utilizo esto para visualizar los datos
 void Impresion(struct Alq_venta *Datos)
 {
@@ -86,9 +89,10 @@ void mostrarContenidoArchivo()
     fflush(stdin);
 }
 */
+
+// Función para mostrar el contenido de propiedades en un formato de tabla.
 void mostrarContenidoformatotabla()
 {
-
     struct Alq_venta Propiedades;
     FILE *pArchivo;
     pArchivo = fopen("propiedades.dat", "rb");
@@ -116,12 +120,11 @@ void mostrarContenidoformatotabla()
         printf("Error en la apertura del archivo");
     }
     getchar();
-};
-//------------------------------------------------------------------//
-//// Carga la propiedad y su tipo...
+}
+
+// Función para cargar un tipo de propiedad en la estructura Alq_venta.
 void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
 {
-
     int opcion;
     printf("Eleccion:");
     scanf("%d", &opcion);
@@ -144,19 +147,16 @@ void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
     limpiarBuffer();
     return;
 }
-//------------------------------------------------------------------//
+
+// Función para generar datos de alquiler o venta de propiedades.
 void GeneradorDeAlq(struct Alq_venta *Datos)
 {
-
-    // Tiempo Actual
     time_t t = time(NULL);
     struct tm tiempoLocal = *localtime(&t);
-    // El formato.
     char *formato = "%d-%m-%Y %H:%M:%S";
-    // Intentar formatear
     int bytesEscritos =
         strftime(Datos->FechaIngreso, sizeof Datos->FechaIngreso, formato, &tiempoLocal);
-    // Alquiler_Ventas es donde se va a guardar la feche local
+
     if (bytesEscritos == 0)
     {
         printf("Error formateando fecha");
@@ -201,8 +201,8 @@ void GeneradorDeAlq(struct Alq_venta *Datos)
     scanf("%[^\n]", Datos->TipMoneda);
     limpiarBuffer();
 
-    printf("Tipo de Propiedad(selecciones una opcion): ");
-    printf("\n 1-Departamento\n 2-Casa \n 3-PH\n");
+    printf("Tipo de Propiedad (seleccione una opcion): ");
+    printf("\n 1-Departamento\n 2-Casa\n 3-PH\n");
     cargarPropiedad(Datos);
     limpiarBuffer();
 
@@ -219,56 +219,164 @@ void GeneradorDeAlq(struct Alq_venta *Datos)
     limpiarBuffer();
 }
 
+// Función para mostrar un mensaje de error en el menú.
 void errorMenu()
 {
-    printf("xxxxxxxxxxxxxx Ingrese una opcion valida xxxxxxxxxxxxxx\n");
+    printf("xxxxxxxxxxxxxx Ingrese una opción valida xxxxxxxxxxxxxx\n");
 }
 
-void submenu()
+// Función para buscar una propiedad por su ID.
+void buscarPorId(struct Alq_venta *Propiedades)
 {
-    printf("------------Sub-Menu------------\n"); 
-    printf("1 - Listar Todos\n");                 
-    printf("2 - Solo Campos Activos\n");
-    printf("3 - el ingreso por teclado de un tipo de propiedad\n");
-    printf("4 - el ingreso de un rango de tiempo de ingreso(minimo y maximo)\n");
-    
-    char Opcion;
+    int id;
+    printf("Ingrese el ID de la propiedad que desea buscar: ");
+    scanf("%d", &id);
 
+    int encontrado = 0;
+
+    FILE *pArchivo = fopen("propiedades.dat", "rb");
+    if (pArchivo == NULL)
+    {
+        printf("Error en la apertura del archivo.\n");
+        return;
+    }
+
+    struct Alq_venta propiedad;
+
+    while (fread(&propiedad, sizeof(struct Alq_venta), 1, pArchivo) != 0)
+    {
+        if (propiedad.Id == id)
+        {
+            printf("Propiedad encontrada:\n");
+            printf("ID: %d\n", propiedad.Id);
+            printf("Fecha de Entrada: %s\n", propiedad.FechaIngreso);
+            printf("Zona: %s\n", propiedad.Zona);
+            printf("Ciudad/Barrio: %s\n", propiedad.Ciudad_Barrio);
+            printf("Dormitorios: %d\n", propiedad.Dormitorios);
+            printf("Banos: %d\n", propiedad.Banos);
+            printf("Superficie Total: %.2f\n", propiedad.SuperficieTotal);
+            printf("Superficie Cubierta: %.2f\n", propiedad.SuperficieCubierta);
+            printf("Precio: %.2f %s\n", propiedad.Precio, propiedad.TipMoneda);
+            printf("Tipo Propiedad: %s\n", propiedad.TipPropiedad);
+            printf("Operacion: %s\n", propiedad.Operacion);
+            printf("Fecha de Salida: %s\n", propiedad.FechaSalida);
+            printf("Activos: %d\n", propiedad.Activos);
+            encontrado = 1;
+        }
+    }
+
+    fclose(pArchivo);
+
+    if (!encontrado)
+    {
+        printf("No se encontro ninguna propiedad con el ID proporcionado.\n");
+    }
+}
+
+// Función para buscar propiedades por tipo de operación y tipo de propiedad.
+void buscarPorTipoOperacionYPropiedad(struct Alq_venta *Propiedades)
+{
+    char tipoOperacion[30];
+    char tipoPropiedad[20];
+
+    printf("Ingrese el tipo de operacion (Venta/Alquiler/Alquiler temporal): ");
+    scanf(" %29[^\n]", tipoOperacion); // Leer tipo de operación como cadena
+
+    printf("Ingrese el tipo de propiedad (Departamento/Casa/PH): ");
+    scanf(" %19[^\n]", tipoPropiedad); // Leer tipo de propiedad como cadena
+
+    int encontrado = 0;
+
+    FILE *pArchivo = fopen("propiedades.dat", "rb");
+    if (pArchivo == NULL)
+    {
+        printf("Error en la apertura del archivo.\n");
+        return;
+    }
+
+    struct Alq_venta propiedad;
+
+    while (fread(&propiedad, sizeof(struct Alq_venta), 1, pArchivo) != 0)
+    {
+        // Comparar las cadenas usando strncmp para ignorar espacios en blanco
+        if (strncmp(tipoOperacion, propiedad.Operacion, sizeof(tipoOperacion)) == 0 &&
+            strncmp(tipoPropiedad, propiedad.TipPropiedad, sizeof(tipoPropiedad)) == 0)
+        {
+            printf("Propiedad encontrada:\n");
+            printf("ID: %d\n", propiedad.Id);
+            printf("Fecha de Entrada: %s\n", propiedad.FechaIngreso);
+            printf("Zona: %s\n", propiedad.Zona);
+            printf("Ciudad/Barrio: %s\n", propiedad.Ciudad_Barrio);
+            printf("Dormitorios: %d\n", propiedad.Dormitorios);
+            printf("Banos: %d\n", propiedad.Banos);
+            printf("Superficie Total: %.2f\n", propiedad.SuperficieTotal);
+            printf("Superficie Cubierta: %.2f\n", propiedad.SuperficieCubierta);
+            printf("Precio: %.2f %s\n", propiedad.Precio, propiedad.TipMoneda);
+            printf("Tipo Propiedad: %s\n", propiedad.TipPropiedad);
+            printf("Operacion: %s\n", propiedad.Operacion);
+            printf("Fecha de Salida: %s\n", propiedad.FechaSalida);
+            printf("Activos: %d\n", propiedad.Activos);
+            encontrado = 1;
+        }
+    }
+
+    fclose(pArchivo);
+
+    if (!encontrado)
+    {
+        printf("No se encontro ninguna propiedad con los tipos de operacion y propiedad proporcionados.\n");
+    }
+}
+
+// Función para mostrar el submenú.
+void submenu(struct Alq_venta *Propiedades)
+{
+    printf("------------Sub-Menu------------\n");
+    printf("1 - Listar Todos\n");
+    printf("2 - Solo Campos Activos\n");
+    printf("3 - Ingreso por teclado de un tipo de propiedad\n");
+    printf("4 - Ingreso de un rango de tiempo de ingreso (minimo y maximo)\n");
+    printf("5 - Buscar por ID\n");
+    printf("6 - Buscar por tipo de operación y luego por tipo de propiedad\n");
+
+    char Opcion;
     printf("\n");
-    printf("Elija opcion : ");
-    scanf("%c", &Opcion);
+    printf("Elija opcion: ");
+    scanf(" %c", &Opcion);
     limpiarBuffer();
     printf("\n");
 
-if (Opcion > 0)
+    switch (Opcion)
     {
-        switch (Opcion)
-        {
         case '1':
-            // Opcion 1 del menu
-            //mostrarContenidoArchivo();
             mostrarContenidoformatotabla();
             break;
         case '2':
-            // Opcion 2 del menu
+            // Opcion 2 del menú (aquí puedes agregar su funcionalidad)
             break;
         case '3':
-            // Opcion 3 del menu
+            // Opcion 3 del menú (aquí puedes agregar su funcionalidad)
             break;
         case '4':
-            // Opcion 4 del menu
+            // Opcion 4 del menú (aquí puedes agregar su funcionalidad)
             break;
-        }
-    }
-    else
-    {
-        errorMenu();
+        case '5':
+            buscarPorId(Propiedades);
+            break;
+        case '6':
+            buscarPorTipoOperacionYPropiedad(Propiedades);
+            break;
+        default:
+            errorMenu();
+            break;
     }
 }
+
+// Función para mostrar el menú principal.
 void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
 {
-    printf("--------------Menu--------------\n"); // Cada funcion del menu invoca una funcion especifica o submenu
-    printf("1 - Crear archivo de propiedades\n"); // Crea el archivo de propiedades.bin
+    printf("--------------Menu--------------\n");
+    printf("1 - Crear archivo de propiedades\n");
     printf("2 - Mirar el Contenido del Archivo\n");
     printf("3 - \n");
     printf("4 - \n");
@@ -281,8 +389,8 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
     FILE *Arch_Datos;
 
     printf("\n");
-    printf("Elija opcion : ");
-    scanf("%c", &opcion);
+    printf("Elija opcion: ");
+    scanf(" %c", &opcion);
     limpiarBuffer();
     printf("\n");
 
@@ -291,10 +399,7 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
         switch (opcion)
         {
         case '1':
-            // Opcion 1 del menu (Crear)
-            // Genera el archivo binario propiedades.dat
-
-            Arch_Datos = fopen("propiedades.dat", "ab+");
+            Arch_Datos = fopen("propiedades.dat", "wb");
             *PSalida = 0;
 
             GeneradorDeAlq(Alquiler_Ventas);
@@ -302,64 +407,48 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
 
             if (Arch_Datos != NULL)
             {
-
-                printf("--------------Archivo creado con exito--------------\n");
+                printf("Saliendo y guardando el archivo de datos");
+                fclose(Arch_Datos);
             }
-            else
-            {
-                printf("xxxxxxxxxxxxxx Error en la creacion del archivo xxxxxxxxxxxxxx\n");
-            };
-
-            fclose(Arch_Datos); // Cierra el archivo después de usarlo
             break;
         case '2':
-            // Opcion 2 del menu (Listar Propiedades)
-            // Lista los valores escritos en propiedades.dat
-            submenu();
-
+            submenu(Alquiler_Ventas);
             break;
         case '3':
-            // Opcion 3 del menu
-
+            //Opcion 3 del menu
             break;
         case '4':
-            // Opcion 4 del menu
+            //Opcion 4 del menu
             break;
         case '5':
-            // Opcion 5 del menu
+            //Opcion 5 del menu
             break;
         case '6':
-            // Opcion 6 del menu
+            //Opcion 6 del menu
             break;
         case '7':
-            // Opcion 7 del menu
+            //Opcion 7 del menu
             break;
         case '8':
-            // Opcion 8 del menu(Salida del Menu)
+            // Opcion de salida
             *PSalida = 1;
             break;
-
         default:
             errorMenu();
             break;
         }
     }
-    else
-    {
-        errorMenu();
-    }
 }
-
 
 int main()
 {
-    int salida = 0;
-    struct Alq_venta Alquiler_Ventas;
-
-    while (salida != 1)
+    int Salida = 0;
+    struct Alq_venta Propiedades;
+    while (Salida != 1)
     {
-        menu(&Alquiler_Ventas, &salida);
+        menu(&Propiedades, &Salida);
     }
+    return 0;
 }
 
 //---------------------- Punto Numero 6 --------------------------- //
