@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define VALUE_SIZE 256
 #define FLOAT_POINT '.'
@@ -97,9 +98,8 @@ void BorrarTodo()
     struct Alq_venta Propiedades;
 
     memset(&Propiedades, 0, sizeof(struct Alq_venta));
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 20; i++)
     {
-        Propiedades.Id = i;
         fwrite(&Propiedades, sizeof(struct Alq_venta), 1, pArchivo);
     }
 
@@ -146,7 +146,65 @@ void mostrarContenidoformatotabla()
     getchar();
 }
 
-// Función para cargar un tipo de propiedad en la estructura Alq_venta.
+// VALIDACIONES
+// Funcion para saber si es un numero entero o flotante
+void esUnNumero(const char number[], int *result)
+{
+    int x = 0;
+
+    for (int i = 0; number[i] != '\0'; i++)
+    {
+        if (number[i] == '.')
+        {
+            x++;
+        }
+        else if (!isdigit(number[i])) //&& number[i] != '.' && number[i] != '\0'
+        {
+            *result = 3; // Numero Invalido
+            return;
+        }
+    }
+    if (x == 0)
+    {
+        *result = 1; // Numero Entero
+    }
+    else if (x == 1)
+    {
+        *result = 2; // Numero Flotante
+    }
+    else
+    {
+        *result = 3; // Numero no valido
+    }
+
+    // Verifica que lo ingresado por el ususario sea un Caracter
+}
+// Funcion para saber si se repite la ID
+void validarQueNoSeRepitaId(int id, int *result, struct Alq_venta *Datos)
+{
+    FILE *arch;
+    arch = fopen("propiedades.dat", "rb");
+    if (arch == NULL)
+    {
+        printf("Error al abrir el archivo.\n");
+        return;
+    }
+
+    rewind(arch);
+
+    while (fread(Datos, sizeof(struct Alq_venta), 1, arch))
+    {
+        if (id == Datos->Id)
+        {
+            *result = 3; // El ID ya existe en el archivo
+            break;
+        }
+    }
+    fclose(arch);
+}
+
+// OPCIONES PARA CAMPOS ESPECIFICOS
+//  Función para cargar un tipo de propiedad en la estructura Alq_venta.
 void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
 {
     int opcion;
@@ -169,12 +227,63 @@ void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
         break;
     }
     limpiarBuffer();
-    return;
+}
+// Funcion para carga un tipo de Operacion para la propiedad en la estrucura Alq_Venta
+void cargarOperacion(struct Alq_venta *Opc_Operacion)
+{
+    int opcion;
+    printf("Eleccion:");
+    scanf("%d", &opcion);
+
+    switch (opcion)
+    {
+    case 1:
+        strcpy(Opc_Operacion->Operacion, "Alquiler");
+        break;
+    case 2:
+        strcpy(Opc_Operacion->Operacion, "Alq.Temp.");
+        break;
+    case 3:
+        strcpy(Opc_Operacion->Operacion, "Venta");
+        break;
+    default:
+        printf("No se guardo");
+        break;
+    }
+    limpiarBuffer();
+}
+// Funcion para cargar un Tipo de Moneda en el cual se abonara la propiedad en la estructura Alq_Venta
+void cargarTipoMoneda(struct Alq_venta *Opc_TipoMoneda)
+{
+    int opcion;
+    printf("Eleccion:");
+    scanf("%d", &opcion);
+
+    switch (opcion)
+    {
+    case 1:
+        strcpy(Opc_TipoMoneda->TipMoneda, "PESOS");
+        break;
+    case 2:
+        strcpy(Opc_TipoMoneda->TipMoneda, "USD");
+        break;
+    case 3:
+        strcpy(Opc_TipoMoneda->TipMoneda, "Euro");
+        break;
+    default:
+        printf("No se guardo");
+        break;
+    }
+    limpiarBuffer();
 }
 
 // Función para generar datos de alquiler o venta de propiedades.
 void GeneradorDeProp(struct Alq_venta *Datos)
 {
+    char input[VALUE_SIZE];
+    int resultadoValidacion = 0;
+    int id, ConfNum;
+
     time_t t = time(NULL);
     struct tm tiempoLocal = *localtime(&t);
     char *formato = "%d-%m-%Y %H:%M:%S";
@@ -183,15 +292,47 @@ void GeneradorDeProp(struct Alq_venta *Datos)
 
     if (bytesEscritos == 0)
     {
-        printf("Error formateando fecha");
+        printf("Error formateando fecha\n");
     }
     limpiarBuffer();
-
     printf("\n");
+
     printf("----------Entrada de datos----------\n");
-    printf("Id : ");
-    scanf("%d", &Datos->Id);
-    limpiarBuffer();
+
+    do
+    {
+        printf("ID : ");
+        scanf("%s", input);
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            id = atoi(input);
+        }
+        else if (resultadoValidacion == 2)
+        {
+            id = (int)atof(input);
+            resultadoValidacion == 1;
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+        }
+
+        validarQueNoSeRepitaId(id, &resultadoValidacion, Datos);
+        if (resultadoValidacion == 3)
+        {
+            printf("El ID ingresado ya existe en el archivo. Por favor, ingrese otro.\n");
+        }
+
+    } while (resultadoValidacion != 1);
+
+    Datos->Id = id;
+    // Reinicio Variable para volver a ulizarlas
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
 
     printf("Zona en donde se encuentra la residencia : ");
     scanf("%[^\n]", Datos->Zona);
@@ -201,13 +342,56 @@ void GeneradorDeProp(struct Alq_venta *Datos)
     scanf("%[^\n]", Datos->Ciudad_Barrio);
     limpiarBuffer();
 
-    printf("Cantidad de Dormitorios : ");
-    scanf("%d", &Datos->Dormitorios);
-    limpiarBuffer();
+    do
+    {
+        printf("Cantidad de Dormitorios : ");
+        scanf("%s", input);
+        limpiarBuffer();
 
-    printf("Cantidad de Banos : ");
-    scanf("%d", &Datos->Banos);
-    limpiarBuffer();
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNum = atoi(input);
+        }
+        else if (resultadoValidacion == 2)
+        {
+            ConfNum = (int)atof(input);
+            resultadoValidacion == 1;
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+        }
+    } while (resultadoValidacion != 1);
+
+    Datos->Dormitorios = ConfNum;
+    // Reinicio Variable para volver a ulizarlas
+    ConfNum = 0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Cantidad de Banos : ");
+        scanf("%s", input);
+        limpiarBuffer();
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNum = atoi(input);
+        }
+        else if (resultadoValidacion == 2)
+        {
+            ConfNum = (int)atof(input);
+            resultadoValidacion == 1;
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+        }
+    } while (resultadoValidacion = !1);
 
     printf("Superficie Total de la vivienda : ");
     scanf("%f", &Datos->SuperficieTotal);
@@ -222,25 +406,25 @@ void GeneradorDeProp(struct Alq_venta *Datos)
     limpiarBuffer();
 
     printf("Tipo de Moneda : ");
-    scanf("%[^\n]", Datos->TipMoneda);
+    printf("\n 1-PESOS\n 2-USD\n 3-Euro\n");
+    cargarTipoMoneda(Datos);
     limpiarBuffer();
 
-    printf("Tipo de Propiedad (seleccione una opcion): ");
+    printf("Tipo de Propiedad (Seleccione una opcion): ");
     printf("\n 1-Departamento\n 2-Casa\n 3-PH\n");
     cargarPropiedad(Datos);
     limpiarBuffer();
 
-    printf("Que Operaciones va a realizar con la vivienda: ");
-    scanf("%[^\n]", Datos->Operacion);
+    printf("Que Operaciones va a realizar con la vivienda(Seleccione una opcion): ");
+    printf("\n 1-Alquiler\n 2-Alquiler Temporal\n 3-Venta\n");
+    cargarOperacion(Datos);
     limpiarBuffer();
 
     printf("Fecha de Salida : ");
     scanf("%[^\n]", Datos->FechaSalida);
     limpiarBuffer();
 
-    printf("Activos : ");
-    scanf("%d", &Datos->Activos);
-    limpiarBuffer();
+    Datos->Activos = 1;
 }
 
 // Función para mostrar un mensaje de error en el menú.
@@ -279,7 +463,7 @@ void buscarPorId(struct Alq_venta *Propiedades)
             printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
             printf("%-2d|%-19s|%-19s|%-20s| %-10d| %-4d|%-10.2f|%-13.2f|%-10.2f|%-6s|%-15s|%-10s|%-15s|%-7d\n",
                    propiedad.Id, propiedad.FechaIngreso, propiedad.Zona, propiedad.Ciudad_Barrio, propiedad.Dormitorios, propiedad.Banos, propiedad.SuperficieTotal, propiedad.SuperficieCubierta, propiedad.Precio, propiedad.TipMoneda, propiedad.TipPropiedad, propiedad.Operacion, propiedad.FechaSalida, propiedad.Activos);
-        
+
             printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
             encontrado = 1;
         }
@@ -394,9 +578,9 @@ void submenu(struct Alq_venta *Propiedades)
 void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
 {
     printf("--------------Menu--------------\n");
-    printf("1 - Crear archivo de propiedades\n");
+    printf("1 - Crear nuevo alta de propiedade\n");
     printf("2 - Mirar el Contenido del Archivo\n");
-    printf("3 - Dar el alta una Nueva Propiedad\n");
+    printf("3 - \n");
     printf("4 - \n");
     printf("5 - \n");
     printf("6 - \n");
@@ -421,12 +605,12 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             *PSalida = 0;
 
             GeneradorDeProp(Alquiler_Ventas);
-            fseek(Arch_Datos, Alquiler_Ventas->Id * sizeof(struct Alq_venta), SEEK_SET);
+            fseek(Arch_Datos, (Alquiler_Ventas->Id - 1) * sizeof(struct Alq_venta), SEEK_SET);
             fwrite(Alquiler_Ventas, sizeof(struct Alq_venta), 1, Arch_Datos);
 
             if (Arch_Datos != NULL)
             {
-                printf("Saliendo y guardando el archivo de datos");
+                printf("Saliendo y guardando el archivo de datos\n");
                 fclose(Arch_Datos);
             }
             break;
@@ -435,24 +619,26 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             break;
         case '3':
             // Opcion 3 del menu
-             // Da de alta nuevas propiedades
+            // Da de alta nuevas propiedades
             {
-            FILE *arch = fopen("propiedades.dat", "ab+");
-            if (arch == NULL){
-            printf("Error al abrir el archivo");
-            return 1;
-            }
-            char opcion;
-            do {
-                darAlta(arch);
-                printf("¿Desea ingresar otra propiedad? (S/N): ");
-                scanf(" %c", &opcion);
-                limpiarBuffer();
-            } while (opcion == 'S' || opcion == 's');
+                FILE *arch = fopen("propiedades.dat", "ab+");
+                if (arch == NULL)
+                {
+                    printf("Error al abrir el archivo");
+                    return 1;
+                }
+                char opcion;
+                do
+                {
+                    darAlta(arch);
+                    printf("¿Desea ingresar otra propiedad? (S/N): ");
+                    scanf(" %c", &opcion);
+                    limpiarBuffer();
+                } while (opcion == 'S' || opcion == 's');
 
-            fclose(arch);
+                fclose(arch);
             }
-            
+
             break;
         case '4':
             // Opcion 4 del menu
@@ -489,93 +675,52 @@ int main()
     return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
 //---------------------- Punto Numero 6 --------------------------- //
 //------------------------------------------------------------------//
 // Alta de propiedad:
-//Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
-//Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
-//Este algoritmo solo funcionará si cada palabra está separado por un espacio:
+// Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
+// Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
+// Este algoritmo solo funcionará si cada palabra está separado por un espacio:
 
-
-void cambiar_a_mayusculas(char * palabras)
+void cambiar_a_mayusculas(char *palabras)
 {
-    for(int primeraLetra = 1; *palabras; ++palabras)
+    for (int primeraLetra = 1; *palabras; ++palabras)
     {
-        if(primeraLetra && isalpha(*palabras))
+        if (primeraLetra && isalpha(*palabras))
         {
             *palabras = toupper(*palabras);
             primeraLetra = 0;
         }
-        if(*palabras == ' ')
+        if (*palabras == ' ')
             primeraLetra = 1;
     }
 }
 
 //------------------------------------------------------------------//
 
-//Esta función permite determinar si una cadena corresponde a:
-//1- Un número entero,
-//2- Un número con punto decimal,
-//3- Un valor numérico inválido (caracteres, espacios, etc.).
+// Esta función permite determinar si una cadena corresponde a:
+// 1- Un número entero,
+// 2- Un número con punto decimal,
+// 3- Un valor numérico inválido (caracteres, espacios, etc.).
 
-
-void esUnNumero(const char number[], int *result) {
-    int i = 0, x = 0;
-
-    for (i = 0; i < VALUE_SIZE; i++) {
-        if (number[i] == '.') {
-            x++;
-        }
-        if (!isdigit(number[i]) && number[i] != '.' && number[i] != '\0') {
-            *result = 3; // Numero Invalido
-            return;
-        }
-    }
-
-    if (x == 0) {
-        *result = 1; // Numero Entero
-    } else if (x == 1) {
-        *result = 2; // Numero Flotante
-    } else {
-        *result = 3; // Numero no valido
-    }
-
-
-//Verifica que lo ingresado por el ususario sea un Caracter
-
-int esCaracterOString(const char input[]) {
-    if (strlen(input) == 1) {
+int esCaracterOString(const char input[])
+{
+    if (strlen(input) == 1)
+    {
         return 1; // Es un Caracter
-    } else {
+    }
+    else
+    {
         return 2; // Es un string
     }
-   }
-
-
-
+}
 //---------------------- Punto Numero 6 --------------------------- //
 //------------------------------------------------------------------//
 // Alta de propiedad:
 
-void validarQueNoSeRepitaId(int id, struct Alq_venta *Datos, FILE *arch) {
-    int existe = 0;
-    rewind(arch);
-
-    while (fread(Datos, sizeof(struct Alq_venta), 1, arch) == 1) {
-        if (id == Datos->Id) {
-            printf("El ID ingresado ya existe en el archivo\n");
-            existe = 1;
-            break;
-        }
-    }
-
-    if (existe == 0) {
-        fseek(arch, 0, SEEK_END);
-        fwrite(Datos, sizeof(struct Alq_venta), 1, arch);
-    }
-}
-
-void darAlta(FILE *arch) {
+void darAlta(FILE *arch)
+{
     struct Alq_venta Datos;
     int id;
     char input[VALUE_SIZE];
@@ -587,49 +732,58 @@ void darAlta(FILE *arch) {
 
     // INGRESA Y VALIDA LOS DATOS DEL ID
     printf("----------Entrada de datos----------\n");
-    do {
+    do
+    {
         printf("Ingrese el número de Id: ");
         scanf("%i", &id);
     } while (id < 0);
 
     Datos.Id = id;
-    validarQueNoSeRepitaId(id, &Datos, arch);
+    // validarQueNoSeRepitaId(id, &Datos,);
     limpiarBuffer();
 
-    //INGRESA Y VALIDA LOS DATOS DE LA ZONA
+    // INGRESA Y VALIDA LOS DATOS DE LA ZONA
     printf("Zona en donde se encuentra la residencia: ");
     scanf("%s", input);
     int tipoDato = esCaracterOString(input);
 
-    if (tipoDato == 1) {
+    if (tipoDato == 1)
+    {
         printf("Es un carácter valido. Valor asignado: %c\n", input[0]);
         Datos.Zona[0] = input[0]; // Asigna el valor a Datos.Zona
-    } else if (tipoDato == 2) {
+    }
+    else if (tipoDato == 2)
+    {
         printf("Es una cadena valida. Valor asignado: %s\n", input);
         strncpy(Datos.Zona, input, sizeof(Datos.Zona)); // Aigna el valor a Datos.Zona
-    } else {
+    }
+    else
+    {
         printf("El dato ingresado es incorrecto. No se ha asignado a Zona.\n");
     }
     cambiar_a_mayusculas(Datos.Zona);
     limpiarBuffer();
 
-    //INGRESA Y VALIDA DATO CIUDAD_BARRIO
+    // INGRESA Y VALIDA DATO CIUDAD_BARRIO
     printf("Ciudad o Barrio de la residencia: ");
     scanf("%s", input);
     int tipoDato2 = esCaracterOString(input);
 
-    if (tipoDato2 == 1) {
+    if (tipoDato2 == 1)
+    {
         printf("Es un carácter valido. Valor asignado: %c\n", input[0]);
         Datos.Ciudad_Barrio[0] = input[0]; // Asigna el valor a Datos.Ciudad_Barrio
         printf("Es una cadena valida. Valor asignado: %s\n", input);
         strncpy(Datos.Ciudad_Barrio, input, sizeof(Datos.Ciudad_Barrio)); // Asigna el valor de Datos.Ciudad_Barrio
-    } else {
+    }
+    else
+    {
         printf("El dato ingresado es incorrecto. No se ha asignado a Zona.\n");
     }
     cambiar_a_mayusculas(Datos.Ciudad_Barrio);
     limpiarBuffer();
 
-    //INGRESA Y VALIDA DATO DORMITORIOS
+    // INGRESA Y VALIDA DATO DORMITORIOS
     printf("Cantidad de Dormitorios: ");
     scanf("%d", &Datos.Dormitorios);
     int resultadoValidacion;
@@ -638,110 +792,143 @@ void darAlta(FILE *arch) {
 
     esUnNumero(input, &resultadoValidacion);
 
-    if (resultadoValidacion == 1) {
+    if (resultadoValidacion == 1)
+    {
         // Valor entero
         Datos.Dormitorios = atoi(input);
         printf("Es un numero entero valido. Valor asignado: %d\n", Datos.Dormitorios);
-    } else if (resultadoValidacion == 2) {
+    }
+    else if (resultadoValidacion == 2)
+    {
         // Valor Flotante
         Datos.Dormitorios = (int)atof(input);
         printf("Es un numero flotante valido. Valor asignado: %d\n", Datos.Dormitorios);
-    } else {
+    }
+    else
+    {
         printf("El numero ingresado es incorrecto. No se ha asignado a Dormitorios.\n");
-    limpiarBuffer();
+        limpiarBuffer();
+    }
 
-    //INGRESA Y VALIDA DATO BAÑOS
+    // INGRESA Y VALIDA DATO BAÑOS
     printf("Cantidad de Banos: ");
     scanf("%s", input);
 
-     esUnNumero(input, &resultadoValidacion);
+    esUnNumero(input, &resultadoValidacion);
 
-    //Verifica el resultado de validacion y valida el tipo de dato...
-    if (resultadoValidacion == 1) {
+    // Verifica el resultado de validacion y valida el tipo de dato...
+    if (resultadoValidacion == 1)
+    {
         // Valor entero
         Datos.Banos = atoi(input);
         printf("Es un numero entero valido. Valor asignado: %d\n", Datos.Banos);
-    } else if (resultadoValidacion == 2) {
+    }
+    else if (resultadoValidacion == 2)
+    {
         // Valor Flotante
         Datos.Banos = (int)atof(input);
         printf("Es un numero flotante valido. Valor asignado: %d\n", Datos.Banos);
-    } else {
+    }
+    else
+    {
         printf("El numero ingresado es incorrecto. No se ha asignado a Banos.\n");
-    limpiarBuffer();
+        limpiarBuffer();
+    }
 
-    //INGRESA Y VALIDA DATO DE SUPERFICIE TOTAL
+    // INGRESA Y VALIDA DATO DE SUPERFICIE TOTAL
 
     printf("Superficie Total de la vivienda: ");
     scanf("%s", input);
 
-     esUnNumero(input, &resultadoValidacion);
+    esUnNumero(input, &resultadoValidacion);
 
-     //Verifica el resultado de validacion y valida el tipo de dato
-    if (resultadoValidacion == 1) {
+    // Verifica el resultado de validacion y valida el tipo de dato
+    if (resultadoValidacion == 1)
+    {
         // Valor entero
         Datos.SuperficieTotal = atoi(input);
         printf("Es un numero entero valido. Valor asignado: %d\n", Datos.SuperficieTotal);
-    } else if (resultadoValidacion == 2) {
+    }
+    else if (resultadoValidacion == 2)
+    {
         // Valor Flotante
         Datos.SuperficieTotal = (int)atof(input);
         printf("Es un numero flotante valido. Valor asignado: %d\n", Datos.SuperficieTotal);
-    } else {
+    }
+    else
+    {
         printf("El numero ingresado es incorrecto. No se ha asignado a Superficie Total.\n");
-    limpiarBuffer();
+        limpiarBuffer();
+    }
 
-
-    //INGRESA Y VALIDA DATO DE SUPERFICIE CUBIERTA
+    // INGRESA Y VALIDA DATO DE SUPERFICIE CUBIERTA
     printf("Superficie Cubierta de la vivienda: ");
     scanf("%s", input);
 
-     esUnNumero(input, &resultadoValidacion);
+    esUnNumero(input, &resultadoValidacion);
 
-     //Verifica el resultado de validacion y valida el tipo de dato...
-    if (resultadoValidacion == 1) {
+    // Verifica el resultado de validacion y valida el tipo de dato...
+    if (resultadoValidacion == 1)
+    {
         // Valor entero
         Datos.SuperficieCubierta = atoi(input);
         printf("Es un numero entero valido. Valor asignado: %d\n", Datos.SuperficieCubierta);
-    } else if (resultadoValidacion == 2) {
+    }
+    else if (resultadoValidacion == 2)
+    {
         // Valor Flotante
         Datos.SuperficieCubierta = (int)atof(input);
         printf("Es un numero flotante valido. Valor asignado: %d\n", Datos.SuperficieCubierta);
-    } else {
+    }
+    else
+    {
         printf("El numero ingresado es incorrecto. No se ha asignado a Superficie Total.\n");
-    limpiarBuffer();
+        limpiarBuffer();
+    }
 
+    // INGRESA Y VALIDA DATO DE PRECIO
+    printf("Precio: ");
+    scanf("%s", input);
 
-    //INGRESA Y VALIDA DATO DE PRECIO
-     printf("Precio: ");
-     scanf("%s", input);
+    esUnNumero(input, &resultadoValidacion);
 
-     esUnNumero(input, &resultadoValidacion);
-
-     //Verifica el resultado de validacion y valida el tipo de dato...
-    if (resultadoValidacion == 1) {
+    // Verifica el resultado de validacion y valida el tipo de dato...
+    if (resultadoValidacion == 1)
+    {
         // Valor entero
         Datos.Precio = atoi(input);
         printf("Es un numero entero valido. Valor asignado: %d\n", Datos.Precio);
-    } else if (resultadoValidacion == 2) {
+    }
+    else if (resultadoValidacion == 2)
+    {
         // Valor Flotante
         Datos.Precio = (int)atof(input);
         printf("Es un numero flotante valido. Valor asignado: %d\n", Datos.Precio);
-    } else {
+    }
+    else
+    {
         printf("El numero ingresado es incorrecto. No se ha asignado a Superficie Total.\n");
-    limpiarBuffer();
+        limpiarBuffer();
+    }
 
-    //INGRESA Y VALIDA EL TIPO DE MONEDA
+    // INGRESA Y VALIDA EL TIPO DE MONEDA
 
     printf("Tipo de Moneda: ");
-     scanf("%s", input);
+    scanf("%s", input);
     int tipoDato3 = esCaracterOString(input);
 
-    if (tipoDato3 == 1) {
+    if (tipoDato3 == 1)
+    {
         printf("Es un caracter valido. Valor asignado: %c\n", input[0]);
         Datos.TipMoneda[0] = input[0]; // Asigna el valor a Datos.TipMoneda
-    } else if (tipoDato3 == 2) {
+    }
+    else if (tipoDato3 == 2)
+    {
         printf("Es una cadena valida. Valor asignado: %s\n", input);
         strncpy(Datos.TipMoneda, input, sizeof(Datos.TipMoneda)); // Asigna el valor de Datos.Moneda
-    } else {
+    }
+    else
+    {
         printf("El dato ingresado es incorrecto. No se ha asignado a Zona.\n");
     }
     cambiar_a_mayusculas(Datos.TipMoneda);
@@ -762,5 +949,4 @@ void darAlta(FILE *arch) {
     fseek(arch, 0, SEEK_END);
     fwrite(&Datos, sizeof(struct Alq_venta), 1, arch);
     printf("Datos guardados con éxito.\n");
-
-         }
+}
