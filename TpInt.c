@@ -146,7 +146,7 @@ void mostrarContenidoformatotabla()
     getchar();
 }
 
-// VALIDACIONES
+/*-------------- VALIDACIONES --------------*/
 // Funcion para saber si es un numero entero o flotante
 void esUnNumero(const char number[], int *result)
 {
@@ -202,8 +202,36 @@ void validarQueNoSeRepitaId(int id, int *result, struct Alq_venta *Datos)
     }
     fclose(arch);
 }
+/* Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
+   Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
+   Este algoritmo solo funcionará si cada palabra está separado por un espacio: */
+void cambiar_a_mayusculas(char *palabras)
+{
+    for (int primeraLetra = 1; *palabras; ++palabras)
+    {
+        if (primeraLetra && isalpha(*palabras))
+        {
+            *palabras = toupper(*palabras);
+            primeraLetra = 0;
+        }
+        if (*palabras == ' ')
+            primeraLetra = 1;
+    }
+}
+/* Esta función permite determinar si es caracter o string*/
+int esCaracterOString(const char input[])
+{
+    if (strlen(input) == 1)
+    {
+        return 1; // Es un Caracter
+    }
+    else
+    {
+        return 2; // Es un string
+    }
+}
 
-// OPCIONES PARA CAMPOS ESPECIFICOS
+/*-------------- OPCIONES PARA CAMPOS ESPECIFICO --------------*/
 //  Función para cargar un tipo de propiedad en la estructura Alq_venta.
 void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
 {
@@ -282,14 +310,13 @@ void GeneradorDeProp(struct Alq_venta *Datos)
 {
     char input[VALUE_SIZE];
     int resultadoValidacion = 0;
-    int id, ConfNum;
+    int id, ConfNum, tipoDato;
+    float ConfNumF;
 
     time_t t = time(NULL);
     struct tm tiempoLocal = *localtime(&t);
     char *formato = "%d-%m-%Y %H:%M:%S";
-    int bytesEscritos =
-        strftime(Datos->FechaIngreso, sizeof Datos->FechaIngreso, formato, &tiempoLocal);
-
+    int bytesEscritos = strftime(Datos->FechaIngreso, sizeof Datos->FechaIngreso, formato, &tiempoLocal);
     if (bytesEscritos == 0)
     {
         printf("Error formateando fecha\n");
@@ -304,7 +331,6 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         printf("ID : ");
         scanf("%s", input);
         limpiarBuffer();
-
         esUnNumero(input, &resultadoValidacion);
 
         if (resultadoValidacion == 1)
@@ -314,33 +340,96 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         else if (resultadoValidacion == 2)
         {
             id = (int)atof(input);
-            resultadoValidacion == 1;
+            resultadoValidacion = 1;
         }
         else
         {
             printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
         }
 
         validarQueNoSeRepitaId(id, &resultadoValidacion, Datos);
         if (resultadoValidacion == 3)
         {
             printf("El ID ingresado ya existe en el archivo. Por favor, ingrese otro.\n");
+            memset(input, 0, sizeof(input));
         }
 
     } while (resultadoValidacion != 1);
-
     Datos->Id = id;
     // Reinicio Variable para volver a ulizarlas
     resultadoValidacion = 0;
     memset(input, 0, sizeof(input));
 
-    printf("Zona en donde se encuentra la residencia : ");
-    scanf("%[^\n]", Datos->Zona);
-    limpiarBuffer();
+    do
+    {
+        printf("Zona en donde se encuentra la residencia : ");
+        fgets(input, sizeof(input), stdin); // Utilizo fgets para tomar los espacios
 
-    printf("Ciudad o Barrio de la residencia : ");
-    scanf("%[^\n]", Datos->Ciudad_Barrio);
-    limpiarBuffer();
+        // Eliminamos el salto de línea al final si existe
+        char *newline = strchr(input, '\n');
+        if (newline)
+        {
+            *newline = '\0';
+        }
+
+        tipoDato = esCaracterOString(input);
+        limpiarBuffer();
+
+        if (tipoDato == 1)
+        {
+            Datos->Zona[0] = input[0]; // Asigna el valor a Datos->Zona
+        }
+        else if (tipoDato == 2)
+        {
+            strncpy(Datos->Zona, input, sizeof(Datos->Zona)); // Aigna el valor a Datos->Zona
+            Datos->Zona[sizeof(Datos->Zona) - 1] = '\0';      // Asegura que sea una cadena terminada en NULL.
+        }
+        else
+        {
+            printf("El dato ingresado es incorrecto. No se ha asignado a Zona.\n");
+        }
+    } while (tipoDato != 1 && tipoDato != 2);
+
+    cambiar_a_mayusculas(Datos->Zona);
+    // Reinicio Variable para volver a ulizarlas
+    tipoDato = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Ciudad o Barrio de la residencia : ");
+        fgets(input, sizeof(input), stdin); // Utilizo fgets para tomar los espacios
+
+        // Eliminamos el salto de línea al final si existe
+        char *newline = strchr(input, '\n');
+        if (newline)
+        {
+            *newline = '\0';
+        }
+
+        tipoDato = esCaracterOString(input);
+        limpiarBuffer();
+
+        if (tipoDato == 1)
+        {
+            Datos->Ciudad_Barrio[0] = input[0]; // Asigna el valor a Datos->Zona
+        }
+        else if (tipoDato == 2)
+        {
+            strncpy(Datos->Ciudad_Barrio, input, sizeof(Datos->Ciudad_Barrio)); // Aigna el valor a Datos->Zona
+            Datos->Ciudad_Barrio[sizeof(Datos->Ciudad_Barrio) - 1] = '\0';      // Asegura que sea una cadena terminada en NULL.
+        }
+        else
+        {
+            printf("El dato ingresado es incorrecto. No se ha asignado a Zona.\n");
+        }
+
+    } while (tipoDato != 1 && tipoDato != 2);
+    cambiar_a_mayusculas(Datos->Ciudad_Barrio);
+    // Reinicio Variable para volver a ulizarlas
+    tipoDato = 0;
+    memset(input, 0, sizeof(input));
 
     do
     {
@@ -357,14 +446,14 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         else if (resultadoValidacion == 2)
         {
             ConfNum = (int)atof(input);
-            resultadoValidacion == 1;
+            resultadoValidacion = 1;
         }
         else
         {
             printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
         }
     } while (resultadoValidacion != 1);
-
     Datos->Dormitorios = ConfNum;
     // Reinicio Variable para volver a ulizarlas
     ConfNum = 0;
@@ -376,6 +465,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         printf("Cantidad de Banos : ");
         scanf("%s", input);
         limpiarBuffer();
+
         esUnNumero(input, &resultadoValidacion);
 
         if (resultadoValidacion == 1)
@@ -385,25 +475,109 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         else if (resultadoValidacion == 2)
         {
             ConfNum = (int)atof(input);
-            resultadoValidacion == 1;
+            resultadoValidacion = 1;
         }
         else
         {
             printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
         }
-    } while (resultadoValidacion = !1);
+    } while (resultadoValidacion != 1);
+    Datos->Banos = ConfNum;
+    // Reinicio Variable para volver a ulizarlas
+    ConfNum = 0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
 
-    printf("Superficie Total de la vivienda : ");
-    scanf("%f", &Datos->SuperficieTotal);
-    limpiarBuffer();
+    do
+    {
+        printf("Superficie Total de la vivienda : ");
+        scanf("%s", input);
+        limpiarBuffer();
 
-    printf("Superficie Cubierta de la vivienda : ");
-    scanf("%f", &Datos->SuperficieCubierta);
-    limpiarBuffer();
+        esUnNumero(input, &resultadoValidacion);
 
-    printf("Precio : ");
-    scanf("%f", &Datos->Precio);
-    limpiarBuffer();
+        if (resultadoValidacion == 1)
+        {
+            ConfNumF = (float)atoi(input);
+            resultadoValidacion = 2;
+        }
+        else if (resultadoValidacion == 2)
+        {
+            ConfNumF = atof(input);
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
+        }
+
+    } while (resultadoValidacion != 2);
+    Datos->SuperficieTotal = ConfNumF;
+    // Reinicio Variable para volver a ulizarlas
+    ConfNumF = 0.0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Superficie Cubierta de la vivienda : ");
+        scanf("%s", input);
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNumF = (float)atoi(input);
+            resultadoValidacion = 2;
+        }
+        else if (resultadoValidacion == 2)
+        {
+            ConfNumF = atof(input);
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
+        }
+
+    } while (resultadoValidacion != 2);
+    Datos->SuperficieCubierta = ConfNumF;
+    // Reinicio Variable para volver a ulizarlas
+    ConfNumF = 0.0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Precio : ");
+        scanf("%s", input);
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNumF = (float)atoi(input);
+            resultadoValidacion = 2;
+        }
+        else if (resultadoValidacion == 2)
+        {
+            ConfNumF = atof(input);
+        }
+        else
+        {
+            printf("El valor ingresado no es un número.\n");
+            memset(input, 0, sizeof(input));
+        }
+
+    } while (resultadoValidacion != 2);
+    Datos->Precio = ConfNumF;
+    // Reinicio Variable para volver a ulizarlas
+    ConfNumF = 0.0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
 
     printf("Tipo de Moneda : ");
     printf("\n 1-PESOS\n 2-USD\n 3-Euro\n");
@@ -433,6 +607,7 @@ void errorMenu()
     printf("xxxxxxxxxxxxxx Ingrese una opción valida xxxxxxxxxxxxxx\n");
 }
 
+/* -------------- Buscador (Punto 7) --------------*/
 // Función para buscar una propiedad por su ID.
 void buscarPorId(struct Alq_venta *Propiedades)
 {
@@ -479,7 +654,6 @@ void buscarPorId(struct Alq_venta *Propiedades)
         printf("\n");
     }
 }
-
 // Función para buscar propiedades por tipo de operación y tipo de propiedad.
 void buscarPorTipoOperacionYPropiedad(struct Alq_venta *Propiedades)
 {
@@ -581,8 +755,8 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
     printf("1 - Crear nuevo alta de propiedade\n");
     printf("2 - Mirar el Contenido del Archivo\n");
     printf("3 - \n");
-    printf("4 - \n");
-    printf("5 - \n");
+    printf("4 - Buscar una propiedad por ID\n");
+    printf("5 - Buscar una propiedad por Tipo de Operacion y Propiedad\n");
     printf("6 - \n");
     printf("7 - Reiniciar Tabla\n");
     printf("8 - Salida\n");
@@ -642,9 +816,11 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             break;
         case '4':
             // Opcion 4 del menu
+            buscarPorId(Alquiler_Ventas);
             break;
         case '5':
             // Opcion 5 del menu
+            buscarPorTipoOperacionYPropiedad(Alquiler_Ventas);
             break;
         case '6':
             // Opcion 6 del menu
@@ -675,46 +851,6 @@ int main()
     return 0;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-//---------------------- Punto Numero 6 --------------------------- //
-//------------------------------------------------------------------//
-// Alta de propiedad:
-// Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
-// Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
-// Este algoritmo solo funcionará si cada palabra está separado por un espacio:
-
-void cambiar_a_mayusculas(char *palabras)
-{
-    for (int primeraLetra = 1; *palabras; ++palabras)
-    {
-        if (primeraLetra && isalpha(*palabras))
-        {
-            *palabras = toupper(*palabras);
-            primeraLetra = 0;
-        }
-        if (*palabras == ' ')
-            primeraLetra = 1;
-    }
-}
-
-//------------------------------------------------------------------//
-
-// Esta función permite determinar si una cadena corresponde a:
-// 1- Un número entero,
-// 2- Un número con punto decimal,
-// 3- Un valor numérico inválido (caracteres, espacios, etc.).
-
-int esCaracterOString(const char input[])
-{
-    if (strlen(input) == 1)
-    {
-        return 1; // Es un Caracter
-    }
-    else
-    {
-        return 2; // Es un string
-    }
-}
 //---------------------- Punto Numero 6 --------------------------- //
 //------------------------------------------------------------------//
 // Alta de propiedad:
