@@ -1,3 +1,9 @@
+/* -----------------------------------------------------------
+   Proyecto: Gesti�n de Propiedades
+   L�der de Proyecto: Franco Fontanello
+   Desarrolladores: -Javier Ignacio Cordero.
+                    -Mar�a Jimena Britos.
+   ----------------------------------------------------------- */
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -11,7 +17,7 @@
 #define Columnas 15
 #define Filas 9
 
-// Función para limpiar el búfer de entrada.
+// Funci�n para limpiar el b�fer de entrada.
 void limpiarBuffer()
 {
     int c;
@@ -19,7 +25,7 @@ void limpiarBuffer()
         ;
 }
 
-// Definición de la estructura Alq_venta que almacena datos de propiedades.
+// Definici�n de la estructura Alq_venta que almacena datos de propiedades.
 struct Alq_venta
 {
     int Id;
@@ -113,7 +119,7 @@ void BorrarTodo()
     }
 };
 
-// Función para mostrar el contenido de propiedades en un formato de tabla.
+// Funci�n para mostrar el contenido de propiedades en un formato de tabla.
 void mostrarContenidoformatotabla()
 {
     struct Alq_venta Propiedades;
@@ -191,20 +197,34 @@ void validarQueNoSeRepitaId(int id, int *result, struct Alq_venta *Datos)
     }
 
     rewind(arch);
+    fseek(arch, (id - 1) * sizeof(struct Alq_venta), SEEK_SET);
+    /*
+       while (fread(Datos, sizeof(struct Alq_venta), 1, arch))
+       {
+           if (id == Datos->Id)
+           {
+               *result = 3; // El ID ya existe en el archivo
+               break;
+           }
+       }*/
 
-    while (fread(Datos, sizeof(struct Alq_venta), 1, arch))
+    if (fread(Datos, sizeof(struct Alq_venta), 1, arch) == 1)
     {
         if (id == Datos->Id)
         {
             *result = 3; // El ID ya existe en el archivo
-            break;
         }
     }
+    else
+    {
+        printf("Error al leer el registro o el ID no existe.\n");
+    }
+
     fclose(arch);
 }
 /* Si la variable recibe el valor de 1, quiere decir que estamos en la primera letra.
    Si la variable recibe el valor de 0, quiere decir que NO estamos en la primera letra.
-   Este algoritmo solo funcionará si cada palabra está separado por un espacio: */
+   Este algoritmo solo funcionar� si cada palabra est� separado por un espacio: */
 void cambiar_a_mayusculas(char *palabras)
 {
     for (int primeraLetra = 1; *palabras; ++palabras)
@@ -218,7 +238,7 @@ void cambiar_a_mayusculas(char *palabras)
             primeraLetra = 1;
     }
 }
-/* Esta función permite determinar si es caracter o string*/
+/* Esta funci�n permite determinar si es caracter o string*/
 int esCaracterOString(const char input[])
 {
     if (strlen(input) == 1)
@@ -232,7 +252,15 @@ int esCaracterOString(const char input[])
 }
 
 /*-------------- OPCIONES PARA CAMPOS ESPECIFICO --------------*/
-//  Función para cargar un tipo de propiedad en la estructura Alq_venta.
+// Funci�n para ingresar un nuevo tipo de propiedad por teclado.
+void ingresarTipoPropiedad(struct Alq_venta *Propiedades)
+{
+    printf("Ingrese el nuevo tipo de propiedad: ");
+    scanf("%s", Propiedades->TipPropiedad);
+    printf("Nuevo tipo de propiedad '%s' ingresado.\n", Propiedades->TipPropiedad);
+    limpiarBuffer();
+}
+//  Funci�n para cargar un tipo de propiedad en la estructura Alq_venta.
 void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
 {
     int opcion;
@@ -249,6 +277,9 @@ void cargarPropiedad(struct Alq_venta *Opc_Propiedad)
         break;
     case 3:
         strcpy(Opc_Propiedad->TipPropiedad, "PH");
+        break;
+    case 4:
+        ingresarTipoPropiedad(Opc_Propiedad);
         break;
     default:
         printf("No se guardo");
@@ -305,7 +336,7 @@ void cargarTipoMoneda(struct Alq_venta *Opc_TipoMoneda)
     limpiarBuffer();
 }
 
-// Función para generar datos de alquiler o venta de propiedades.
+// Funci�n para generar datos de alquiler o venta de propiedades.
 void GeneradorDeProp(struct Alq_venta *Datos)
 {
     char input[VALUE_SIZE];
@@ -344,7 +375,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
 
@@ -366,7 +397,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         printf("Zona en donde se encuentra la residencia : ");
         fgets(input, sizeof(input), stdin); // Utilizo fgets para tomar los espacios
 
-        // Eliminamos el salto de línea al final si existe
+        // Eliminamos el salto de l�nea al final si existe
         char *newline = strchr(input, '\n');
         if (newline)
         {
@@ -401,7 +432,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         printf("Ciudad o Barrio de la residencia : ");
         fgets(input, sizeof(input), stdin); // Utilizo fgets para tomar los espacios
 
-        // Eliminamos el salto de línea al final si existe
+        // Eliminamos el salto de l�nea al final si existe
         char *newline = strchr(input, '\n');
         if (newline)
         {
@@ -450,7 +481,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
     } while (resultadoValidacion != 1);
@@ -479,7 +510,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
     } while (resultadoValidacion != 1);
@@ -508,7 +539,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
 
@@ -538,7 +569,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
 
@@ -568,7 +599,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
         }
         else
         {
-            printf("El valor ingresado no es un número.\n");
+            printf("El valor ingresado no es un n�mero.\n");
             memset(input, 0, sizeof(input));
         }
 
@@ -585,7 +616,7 @@ void GeneradorDeProp(struct Alq_venta *Datos)
     limpiarBuffer();
 
     printf("Tipo de Propiedad (Seleccione una opcion): ");
-    printf("\n 1-Departamento\n 2-Casa\n 3-PH\n");
+    printf("\n 1-Departamento\n 2-Casa\n 3-PH\n 4-Otro\n");
     cargarPropiedad(Datos);
     limpiarBuffer();
 
@@ -594,21 +625,137 @@ void GeneradorDeProp(struct Alq_venta *Datos)
     cargarOperacion(Datos);
     limpiarBuffer();
 
-    printf("Fecha de Salida : ");
-    scanf("%[^\n]", Datos->FechaSalida);
+    printf("Fecha de Salida : \n");
+    do
+    {
+        printf("Dia : ");
+        scanf("%s", input);
+        printf("\n");
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNum = atoi(input);
+            if (ConfNum > 31 || ConfNum < 1)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else if (resultadoValidacion == 2)
+        {
+
+            ConfNum = (int)atof(input);
+            resultadoValidacion = 1;
+            if (ConfNum > 31 || ConfNum < 1)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else
+        {
+            printf("El valor ingresado no es coherente.\n");
+            memset(input, 0, sizeof(input));
+        }
+    } while (resultadoValidacion != 1);
+    int Dia = ConfNum;
+    ConfNum = 0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Mes : ");
+        scanf("%s", input);
+        printf("\n");
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNum = atoi(input);
+            if (ConfNum > 12 || ConfNum < 1)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else if (resultadoValidacion == 2)
+        {
+
+            ConfNum = (int)atof(input);
+            resultadoValidacion = 1;
+            if (ConfNum > 12 || ConfNum < 1)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else
+        {
+            printf("El valor ingresado no es coherente.\n");
+            memset(input, 0, sizeof(input));
+        }
+    } while (resultadoValidacion != 1);
+    int Mes = ConfNum;
+    ConfNum = 0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    do
+    {
+        printf("Año(Ultimos 2 digitos) : ");
+        scanf("%s", input);
+        printf("\n");
+        limpiarBuffer();
+
+        esUnNumero(input, &resultadoValidacion);
+
+        if (resultadoValidacion == 1)
+        {
+            ConfNum = atoi(input);
+            if (ConfNum < 23 || ConfNum > 99)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else if (resultadoValidacion == 2)
+        {
+
+            ConfNum = (int)atof(input);
+            resultadoValidacion = 1;
+            if (ConfNum < 23 || ConfNum > 99)
+            {
+                resultadoValidacion = 0;
+            }
+        }
+        else
+        {
+            printf("El valor ingresado no es coherente.\n");
+            memset(input, 0, sizeof(input));
+        }
+    } while (resultadoValidacion != 1);
+    int Ano = ConfNum;
+    printf("%d", Ano);
+    ConfNum = 0;
+    resultadoValidacion = 0;
+    memset(input, 0, sizeof(input));
+
+    sprintf(Datos->FechaSalida, "%d/%d/ %d", Dia, Mes, Ano);
     limpiarBuffer();
 
     Datos->Activos = 1;
 }
 
-// Función para mostrar un mensaje de error en el menú.
+// Funcion para mostrar un mensaje de error en el menu.
 void errorMenu()
 {
-    printf("xxxxxxxxxxxxxx Ingrese una opción valida xxxxxxxxxxxxxx\n");
+    printf("xxxxxxxxxxxxxx Ingrese una opci�n valida xxxxxxxxxxxxxx\n");
 }
 
-/* -------------- Buscador (Punto 7) --------------*/
-// Función para buscar una propiedad por su ID.
+// -------------- Buscador (Punto 7) --------------//
+// Funci�n para buscar una propiedad por su ID.
+
 void buscarPorId(struct Alq_venta *Propiedades)
 {
     int id;
@@ -654,14 +801,14 @@ void buscarPorId(struct Alq_venta *Propiedades)
         printf("\n");
     }
 }
-// Función para buscar propiedades por tipo de operación y tipo de propiedad.
+// Funci�n para buscar propiedades por tipo de operaci�n y tipo de propiedad.
 void buscarPorTipoOperacionYPropiedad(struct Alq_venta *Propiedades)
 {
     char tipoOperacion[30];
     char tipoPropiedad[20];
 
     printf("Ingrese el tipo de operacion (Venta/Alquiler/Alquiler temporal): ");
-    scanf(" %29[^\n]", tipoOperacion); // Leer tipo de operación como cadena
+    scanf(" %29[^\n]", tipoOperacion); // Leer tipo de operaci�n como cadena
 
     printf("Ingrese el tipo de propiedad (Departamento/Casa/PH): ");
     scanf(" %19[^\n]", tipoPropiedad); // Leer tipo de propiedad como cadena
@@ -703,17 +850,56 @@ void buscarPorTipoOperacionYPropiedad(struct Alq_venta *Propiedades)
         printf("No se encontro ninguna propiedad con los tipos de operacion y propiedad proporcionados.\n");
     }
 }
+// Funci�n para buscar por Activo
+void buscarPorActivos(struct Alq_venta *Propiedades)
+{
+    int Activo = 1;
+    int encontrado = 0;
 
-// Función para mostrar el submenú.
+    FILE *pArchivo = fopen("propiedades.dat", "rb");
+    if (pArchivo == NULL)
+    {
+        printf("Error en la apertura del archivo.\n");
+        return;
+    }
+
+    struct Alq_venta propiedad;
+
+    while (fread(&propiedad, sizeof(struct Alq_venta), 1, pArchivo) != 0)
+    {
+        // Comparar las cadenas usando strncmp para ignorar espacios en blanco
+        if (propiedad.Activos == Activo)
+        {
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2s|%-19s|%-19s|%-20s|%-10s|%-5s|%-10s|%-13s|%-10s|%-6s|%-15s|%-10s|%-15s|%-7s\n",
+                   "ID", "Fecha de Entrada", "Zona", "Ciudad/Barrio", "Dormitorios", "Banos", "Sup. Total", "Sup. Cubierta", "Precio", "Moneda", "Tipo Propiedad", "Operacion", "Fecha de Salida", "Activos");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("%-2d|%-19s|%-19s|%-20s| %-10d| %-4d|%-10.2f|%-13.2f|%-10.2f|%-6s|%-15s|%-10s|%-15s|%-7d\n",
+                   propiedad.Id, propiedad.FechaIngreso, propiedad.Zona, propiedad.Ciudad_Barrio, propiedad.Dormitorios, propiedad.Banos, propiedad.SuperficieTotal, propiedad.SuperficieCubierta, propiedad.Precio, propiedad.TipMoneda, propiedad.TipPropiedad, propiedad.Operacion, propiedad.FechaSalida, propiedad.Activos);
+
+            printf("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            encontrado = 1;
+        }
+    }
+
+    fclose(pArchivo);
+    limpiarBuffer();
+    if (!encontrado)
+    {
+        printf("No se encontro ningun activo.\n");
+    }
+}
+
+// -------------- Menus --------------//
+// Funci�n para mostrar el submen�.
 void submenu(struct Alq_venta *Propiedades)
 {
     printf("------------Sub-Menu------------\n");
     printf("1 - Listar Todos\n");
     printf("2 - Solo Campos Activos\n");
-    printf("3 - Ingreso por teclado de un tipo de propiedad\n");
-    printf("4 - Ingreso de un rango de tiempo de ingreso (minimo y maximo)\n");
-    printf("5 - Buscar por ID\n");
-    printf("6 - Buscar por tipo de operación y luego por tipo de propiedad\n");
+    printf("3 - Buscar por ID\n");
+    printf("4 - Buscar por tipo de operacion y luego por tipo de propiedad\n");
 
     char Opcion;
     printf("\n");
@@ -728,18 +914,12 @@ void submenu(struct Alq_venta *Propiedades)
         mostrarContenidoformatotabla();
         break;
     case '2':
-        // Opcion 2 del menú (aquí puedes agregar su funcionalidad)
+        buscarPorActivos(Propiedades);
         break;
     case '3':
-        // Opcion 3 del menú (aquí puedes agregar su funcionalidad)
-        break;
-    case '4':
-        // Opcion 4 del menú (aquí puedes agregar su funcionalidad)
-        break;
-    case '5':
         buscarPorId(Propiedades);
         break;
-    case '6':
+    case '4':
         buscarPorTipoOperacionYPropiedad(Propiedades);
         break;
     default:
@@ -748,18 +928,13 @@ void submenu(struct Alq_venta *Propiedades)
     }
 }
 
-// Función para mostrar el menú principal.
+// Funci�n para mostrar el men� principal.
 void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
 {
     printf("--------------Menu--------------\n");
-    printf("1 - Crear nuevo alta de propiedade\n");
+    printf("1 - Crear nuevo alta de propiedades\n");
     printf("2 - Mirar el Contenido del Archivo\n");
-    printf("3 - \n");
-    printf("4 - Buscar una propiedad por ID\n");
-    printf("5 - Buscar una propiedad por Tipo de Operacion y Propiedad\n");
-    printf("6 - \n");
-    printf("7 - Reiniciar Tabla\n");
-    printf("8 - Salida\n");
+    printf("3 - Salida\n");
 
     char opcion;
     FILE *Arch_Datos;
@@ -792,47 +967,12 @@ void menu(struct Alq_venta *Alquiler_Ventas, int *PSalida)
             submenu(Alquiler_Ventas);
             break;
         case '3':
-            // Opcion 3 del menu
-            // Da de alta nuevas propiedades
-            {
-                FILE *arch = fopen("propiedades.dat", "ab+");
-                if (arch == NULL)
-                {
-                    printf("Error al abrir el archivo");
-                    return 1;
-                }
-                char opcion;
-                do
-                {
-                    darAlta(arch);
-                    printf("¿Desea ingresar otra propiedad? (S/N): ");
-                    scanf(" %c", &opcion);
-                    limpiarBuffer();
-                } while (opcion == 'S' || opcion == 's');
 
-                fclose(arch);
-            }
-
-            break;
-        case '4':
-            // Opcion 4 del menu
-            buscarPorId(Alquiler_Ventas);
-            break;
-        case '5':
-            // Opcion 5 del menu
-            buscarPorTipoOperacionYPropiedad(Alquiler_Ventas);
-            break;
-        case '6':
-            // Opcion 6 del menu
-            break;
-        case '7':
-            // Opcion 7 del menu
-            BorrarTodo();
-            break;
-        case '8':
-            // Opcion de salida
             *PSalida = 1;
             break;
+            /* case '4':
+                 BorrarTodo();  //Habilitar funcion para reiniciar la tabla
+                 break; */
         default:
             errorMenu();
             break;
